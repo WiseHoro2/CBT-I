@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dziennik Snu CBT-I</title>
+    <!-- Czcionka Inter dla nowoczesnego, czytelnego wyglądu -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="styles.css?v=5">
+</head>
+<body class="theme-dark">
+    <div class="app-container">
+        <!-- Tab Bar -->
+        <nav class="tab-bar">
+            <button class="tab-btn active" data-target="view-form">📝 Wpis</button>
+            <button class="tab-btn" data-target="view-grid">📊 Siatka</button>
+            <button class="tab-btn" data-target="view-table">📋 Tabela</button>
+            <button class="tab-btn" data-target="view-stats">📈 Statystyki</button>
+            <button class="tab-btn" data-target="view-calc">⏱️ Kalkulator</button>
+            <button class="tab-btn" data-target="view-settings">⚙️ Ustawienia</button>
+        </nav>
+
+        <!-- Widoki (Zakładki) -->
+        <main class="views-container">
+            <!-- 1. Formularz wpisu -->
+            <section id="view-form" class="view active">
+                <h2>Wpis Dzienny</h2>
+                <div class="card form-container">
+                    <form id="daily-entry-form">
+                        <input type="hidden" id="entry-id" value="">
+                        
+                        <div class="form-section">
+                            <h3>🌙 Noc</h3>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="f-date">Data (dotyczy nocy poprzedzającej poranek)</label>
+                                    <input type="date" id="f-date" required>
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="f-tib-start">Położenie do łóżka</label>
+                                    <input type="time" id="f-tib-start" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="f-lights-out">Zgaszenie światła (próba zaśnięcia)</label>
+                                    <input type="time" id="f-lights-out" required>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="f-sol">Czas zasypiania po zgaszeniu światła (min)</label>
+                                    <input type="number" id="f-sol" min="0" max="300" step="5" required>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Przebudzenia w nocy</label>
+                                <div id="awakenings-container"></div>
+                                <button type="button" class="btn-secondary" id="add-awakening-btn">+ Dodaj przebudzenie</button>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="f-wake">Ostateczne obudzenie</label>
+                                    <input type="time" id="f-wake" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="f-tib-end">Wstanie z łóżka</label>
+                                    <input type="time" id="f-tib-end" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <h3>☀️ Dzień (dotyczy dnia poprzedniego)</h3>
+                            
+                            <div class="form-group">
+                                <label>Drzemki</label>
+                                <div id="naps-container"></div>
+                                <button type="button" class="btn-secondary" id="add-nap-btn">+ Dodaj drzemkę</button>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Kofeina</label>
+                                <div id="caffeine-container"></div>
+                                <button type="button" class="btn-secondary" id="add-caffeine-btn">+ Dodaj kofeinę</button>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Aktywność fizyczna</label>
+                                <div id="activity-container"></div>
+                                <button type="button" class="btn-secondary" id="add-activity-btn">+ Dodaj aktywność</button>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="f-screen-time">Czas ekranowy przed snem (min)</label>
+                                    <input type="number" id="f-screen-time" min="0" max="300" step="10">
+                                </div>
+                                <div class="form-group checkbox-group">
+                                    <label><input type="checkbox" id="f-relaxation"> Relaksacja przed snem</label>
+                                    <input type="number" id="f-relaxation-time" placeholder="Czas (min)" min="5" max="120" style="display:none; width: 100px;">
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Alkohol</label>
+                                <div id="alcohol-container"></div>
+                                <button type="button" class="btn-secondary" id="add-alcohol-btn">+ Dodaj alkohol</button>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Leki nasenne / Suplementy</label>
+                                <div id="meds-container"></div>
+                                <button type="button" class="btn-secondary" id="add-meds-btn">+ Dodaj lek</button>
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <h3>🤔 Subiektywne Oceny</h3>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="f-quality">Jakość snu (1-5)</label>
+                                    <div class="emoji-scale" id="scale-quality">
+                                        <label><input type="radio" name="quality" value="1"> 😫</label>
+                                        <label><input type="radio" name="quality" value="2"> 😟</label>
+                                        <label><input type="radio" name="quality" value="3" checked> 😐</label>
+                                        <label><input type="radio" name="quality" value="4"> 🙂</label>
+                                        <label><input type="radio" name="quality" value="5"> 😴</label>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="f-energy">Energia (1-5)</label>
+                                    <div class="emoji-scale" id="scale-energy">
+                                        <label><input type="radio" name="energy" value="1"> 🪫</label>
+                                        <label><input type="radio" name="energy" value="2"> 😮‍💨</label>
+                                        <label><input type="radio" name="energy" value="3" checked> 😐</label>
+                                        <label><input type="radio" name="energy" value="4"> ⚡</label>
+                                        <label><input type="radio" name="energy" value="5"> 🔋</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="f-mood">Nastrój (1-5)</label>
+                                    <div class="emoji-scale" id="scale-mood">
+                                        <label><input type="radio" name="mood" value="1"> 😢</label>
+                                        <label><input type="radio" name="mood" value="2"> 😕</label>
+                                        <label><input type="radio" name="mood" value="3" checked> 😐</label>
+                                        <label><input type="radio" name="mood" value="4"> 🙂</label>
+                                        <label><input type="radio" name="mood" value="5"> 😄</label>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="f-sleepiness">Senność w dzień (0-10)</label>
+                                    <input type="number" id="f-sleepiness" min="0" max="10" value="5">
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="f-notes">Notatki (opcjonalnie)</label>
+                                <textarea id="f-notes" rows="3" placeholder="Dodatkowe uwagi dotyczące nocy lub dnia..."></textarea>
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="button" class="btn-secondary" id="btn-cancel-form">Wyczyść</button>
+                            <button type="submit" class="primary">Zapisz Wpis</button>
+                        </div>
+                    </form>
+                </div>
+            </section>
+
+            <!-- 2. Widok graficzny (Siatka) -->
+            <section id="view-grid" class="view">
+                <h2>Graficzny Dziennik Snu</h2>
+                
+                <div class="grid-container card">
+                    <!-- Wygenerowana siatka 24h pojawi się tutaj -->
+                    <div id="sleep-grid" class="sleep-grid"></div>
+                </div>
+                
+                <div class="grid-legend">
+                    <div class="legend-item"><span class="box color-sleep"></span> Sen</div>
+                    <div class="legend-item"><span class="box color-bed"></span> Czas w łóżku (Czuwanie)</div>
+                    <div class="legend-item"><span class="box color-awake"></span> WASO (Czuwanie w nocy)</div>
+                    <div class="legend-item"><span class="box color-nap"></span> Drzemka</div>
+                </div>
+            </section>
+
+            <!-- 3. Widok tabelaryczny -->
+            <section id="view-table" class="view">
+                <h2>Tabela Danych</h2>
+                <div class="table-responsive">
+                    <table class="data-table" id="entries-table">
+                        <thead>
+                            <tr>
+                                <th>Data</th>
+                                <th>Do łóżka</th>
+                                <th>Lights Out</th>
+                                <th>SOL</th>
+                                <th>Przebudzenia</th>
+                                <th>WASO</th>
+                                <th>Obudzenie</th>
+                                <th>Wstanie</th>
+                                <th>TIB</th>
+                                <th>TST</th>
+                                <th>SE %</th>
+                                <th>Jakość</th>
+                                <th>Opcje</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Zawartość generowana dynamicznie -->
+                        </tbody>
+                        <tfoot>
+                            <tr id="table-summary-row">
+                                <td colspan="8"><strong>Średnie (cały okres):</strong></td>
+                                <td id="avg-tib"></td>
+                                <td id="avg-tst"></td>
+                                <td id="avg-se"></td>
+                                <td id="avg-quality"></td>
+                                <td></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </section>
+
+            <!-- 4. Statystyki -->
+            <section id="view-stats" class="view">
+                <h2>Wskaźniki i Wykresy</h2>
+                
+                <div class="stats-controls" style="margin-bottom: 20px;">
+                    <button class="btn-secondary active" id="btn-stats-7d">Ostatnie 7 dni</button>
+                    <button class="btn-secondary" id="btn-stats-14d">Ostatnie 14 dni</button>
+                    <button class="btn-secondary" id="btn-stats-all">Wszystkie</button>
+                </div>
+
+                <div class="stats-cards-grid">
+                    <div class="stat-card">
+                        <div class="stat-title">Średni TST</div>
+                        <div class="stat-value" id="stat-avg-tst">--:--</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-title">Średnie SE%</div>
+                        <div class="stat-value" id="stat-avg-se">--%</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-title">Średni SOL</div>
+                        <div class="stat-value" id="stat-avg-sol">-- min</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-title">Średnie WASO</div>
+                        <div class="stat-value" id="stat-avg-waso">-- min</div>
+                    </div>
+                </div>
+
+                <div class="charts-container">
+                    <div class="chart-wrapper">
+                        <h3>Wydajność Snu (SE %)</h3>
+                        <canvas id="chart-se"></canvas>
+                    </div>
+                    <div class="chart-wrapper">
+                        <h3>Czas w Łóżku (TIB) vs Całkowity Czas Snu (TST)</h3>
+                        <canvas id="chart-tst-tib"></canvas>
+                    </div>
+                    <div class="chart-wrapper">
+                        <h3>Wybudzenia (WASO) i Zasypianie (SOL)</h3>
+                        <canvas id="chart-waso-sol"></canvas>
+                    </div>
+                    <div class="chart-wrapper">
+                        <h3>Jakość, Energia i Senność</h3>
+                        <canvas id="chart-subjective"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 5. Kalkulator Restrykcji Snu -->
+            <section id="view-calc" class="view">
+                <h2>Kalkulator Restrykcji Snu (SRT)</h2>
+                
+                <div class="card" style="border-left: 4px solid var(--primary);">
+                    <p style="margin-bottom: 10px;"><strong>Narzędzie do terapii:</strong> Kalkulator wylicza zalecany Czas w Łóżku (Prescribed TIB) oraz Okno Snu (Sleep Window) na podstawie średniego całkowitego czasu snu (TST) i wydajności snu (SE) z ostatnich wpisów.</p>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group card">
+                        <h3>1. Ustawienia Bazowe</h3>
+                        <label for="srt-days">Analizowany okres (dni wstecz)</label>
+                        <select id="srt-days" style="margin-bottom: 15px;">
+                            <option value="7">Ostatnie 7 dni</option>
+                            <option value="14" selected>Ostatnie 14 dni</option>
+                        </select>
+
+                        <label for="srt-wake">Ustalona godzina pobudki (stała!)</label>
+                        <input type="time" id="srt-wake" value="06:00" style="margin-bottom: 15px;">
+
+                        <button class="primary" style="width: 100%;" onclick="calculateSRT()">Wylicz Rekomendacje</button>
+                    </div>
+
+                    <div class="form-group card" id="srt-results" style="display: none; background-color: rgba(37, 99, 235, 0.05);">
+                        <h3 style="color: var(--primary);">Wyniki Analizy</h3>
+                        <p>Średni TST (z okresu): <strong id="srt-avg-tst">--</strong></p>
+                        <p>Średnia SE (z okresu): <strong id="srt-avg-se">--</strong></p>
+                        
+                        <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 15px 0;">
+                        
+                        <h3 style="color: var(--color-success);">Zalecenie (Terapia CBT-I)</h3>
+                        <p id="srt-recommendation-text" style="margin-bottom: 15px; font-weight: 500;"></p>
+                        
+                        <div style="background-color: var(--bg-surface); padding: 15px; border-radius: 6px; border: 1px dashed var(--primary); text-align: center;">
+                            <p style="margin-bottom: 5px; color: var(--text-muted); font-size: 13px;">ZALECAJ ORAZ PRZEPISZ PACJENTOWI:</p>
+                            <p style="font-size: 18px; margin-bottom: 5px;">Czas w łóżku (Prescribed TIB): <strong id="srt-prescribed-tib">--</strong></p>
+                            <p style="font-size: 16px;">Nowe Okno Snu: <strong id="srt-sleep-window" style="color: var(--primary);">--:-- do --:--</strong></p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 6. Ustawienia -->
+            <section id="view-settings" class="view">
+                <h2>Ustawienia Aplikacji</h2>
+                
+                <div class="form-row">
+                    <div class="form-group card">
+                        <h3>Preferencje Użytkownika</h3>
+                        
+                        <div class="form-group">
+                            <label for="set-theme">Motyw wizualny</label>
+                            <select id="set-theme">
+                                <option value="dark">Ciemny (zalecany wieczorem)</option>
+                                <option value="light">Jasny</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="set-age">Wiek pacjenta (wpływa na algorytm SRT)</label>
+                            <input type="number" id="set-age" min="18" max="100" value="30">
+                        </div>
+                        
+                        <button class="primary" onclick="saveSettings()">Zapisz Ustawienia</button>
+                    </div>
+
+                    <div class="form-group card">
+                        <h3>Zarządzanie Danymi</h3>
+                        <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 15px;">Wszystkie dane są przechowywane lokalnie w pamięci przeglądarki. Aby je zarchiwizować lub przenieść na inne urządzenie, użyj eksportu.</p>
+                        
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                            <button class="btn-secondary" onclick="exportData()">⬇️ Eksportuj do JSON</button>
+                            
+                            <label class="btn-secondary" style="margin: 0; cursor: pointer;">
+                                ⬆️ Importuj z JSON
+                                <input type="file" id="import-file" accept=".json" style="display: none;" onchange="importData(event)">
+                            </label>
+                            
+                            <button class="btn-danger-sm" style="padding: 8px 12px; font-size: 14px;" onclick="resetData()">🗑️ Usuń wszystkie dane</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="app.js?v=5"></script>
+</body>
+</html>
