@@ -9,7 +9,7 @@ const state = {
     entries: [],
     settings: {
         theme: 'dark',
-        gridStartHour: 5,
+        gridStartHour: 16,
         gridResolution: 30,
         patientName: '',
         patientAge: 30
@@ -691,7 +691,7 @@ function renderGrid() {
         return;
     }
 
-    const startHour = state.settings.gridStartHour || 5;
+    const startHour = state.settings.gridStartHour || 16;
     const TOTAL_MINUTES = 1440;
 
     // Nagłówek z godzinami
