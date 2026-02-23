@@ -58,6 +58,7 @@ body {
     display: flex;
     flex-direction: column;
     min-height: 100vh;
+    zoom: 1.2;
 }
 
 /* Tab Bar */
@@ -201,6 +202,12 @@ textarea {
     font-family: inherit;
     font-size: 15px;
 }
+
+input[type="range"] {
+    width: 100%;
+    margin: 10px 0;
+    accent-color: var(--primary);
+}
 .checkbox-group {
     display: flex;
     align-items: center;
@@ -338,7 +345,7 @@ textarea {
     padding: 0; /* usunięcie paddingu card dla gridu, by scroll był na równi */
 }
 .sleep-grid {
-    min-width: 1300px; /* wymusza scroll na małych ekranach */
+    min-width: 1400px; /* wymusza scroll na małych ekranach */
     position: relative;
     border-collapse: collapse;
 }
@@ -353,42 +360,70 @@ textarea {
 .grid-row {
     display: flex;
     border-bottom: 1px solid var(--border-color);
-    height: 40px;
+    height: 55px; /* powiększone by zmieścić więcej info */
     align-items: stretch;
 }
 .grid-row:hover {
     background-color: var(--bg-surface-hover);
 }
 .grid-col-info {
-    width: 150px;
+    width: 280px;
     flex-shrink: 0;
-    padding: 8px;
     border-right: 2px solid var(--border-color);
     position: sticky;
     left: 0;
-    background-color: inherit; /* przejmie z hover na wierszu */
+    background-color: var(--bg-surface);
     z-index: 5;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
+    display: grid;
+    grid-template-columns: 115px 70px 1fr;
+    align-items: stretch;
     font-size: 13px;
-}
-/* Na pierwszej komórce z informacją wymuszamy kolor tła by text nie przenikał */
-.grid-col-info {
-    background-color: var(--bg-surface); 
 }
 .grid-row:hover .grid-col-info {
     background-color: var(--bg-surface-hover);
 }
 
-.grid-col-info .date { font-weight: 600; }
-.grid-col-info .stats { color: var(--text-muted); font-size: 11px; }
+.grid-info-cell {
+    padding: 8px;
+    border-right: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+}
+.grid-info-cell:last-child {
+    border-right: none;
+}
+.date-cell {
+    font-weight: 600;
+    font-size: 13px;
+    justify-content: space-between;
+}
+.se-cell {
+    font-weight: bold;
+    font-size: 14px;
+    justify-content: center;
+}
+.subj-cell {
+    justify-content: center;
+    color: var(--text-muted);
+    font-size: 14px;
+    gap: 8px;
+}
+.grid-header .grid-info-cell {
+    font-weight: 600;
+    color: var(--text-muted);
+    font-size: 12px;
+    text-transform: uppercase;
+    justify-content: center;
+    background-color: var(--bg-surface-hover);
+}
 
 .grid-timeline {
     flex: 1;
     display: flex;
     position: relative;
     background-color: var(--color-awake);
+    min-width: 1400px;
 }
 
 /* Kreski dzielące godziny w headerze */
@@ -576,6 +611,17 @@ textarea {
     color: var(--text-muted);
     text-transform: uppercase;
     letter-spacing: 0.05em;
+}
+
+/* ==========================================
+   Modal Samouczek
+   ========================================== */
+.modal::backdrop {
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(3px);
+}
+.btn-close:hover {
+    color: var(--text-main) !important;
 }
 
 @media (max-width: 700px) {

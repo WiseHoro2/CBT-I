@@ -10,7 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="stylesheet" href="styles.css?v=6">
+        <link rel="stylesheet" href="styles.css?v=10">
 </head>
 <body class="theme-dark">
     <div class="app-container">
@@ -28,7 +28,10 @@
         <main class="views-container">
             <!-- 1. Formularz wpisu -->
             <section id="view-form" class="view active">
-                <h2>Wpis Dzienny</h2>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2 style="margin-bottom: 0;">Wpis Dzienny</h2>
+                    <a href="#" id="open-tutorial" class="tutorial-link" style="font-size: 14px; font-weight: 500; color: var(--primary); text-decoration: none;">ℹ️ Jak wypełniać?</a>
+                </div>
                 <div class="card form-container">
                     <form id="daily-entry-form">
                         <input type="hidden" id="entry-id" value="">
@@ -39,6 +42,13 @@
                                 <div class="form-group">
                                     <label for="f-date">Data (dotyczy nocy poprzedzającej poranek)</label>
                                     <input type="date" id="f-date" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="f-day-off">Rodzaj dnia</label>
+                                    <select id="f-day-off">
+                                        <option value="false" selected>Dzień roboczy</option>
+                                        <option value="true">Dzień wolny od pracy</option>
+                                    </select>
                                 </div>
                             </div>
                             
@@ -55,8 +65,11 @@
 
                             <div class="form-row">
                                 <div class="form-group">
-                                    <label for="f-sol">Czas zasypiania po zgaszeniu światła (min)</label>
-                                    <input type="number" id="f-sol" min="0" max="300" step="5" required>
+                                    <label for="f-sol" style="display: flex; justify-content: space-between;">
+                                        <span>Czas zasypiania po zgaszeniu światła</span>
+                                        <span style="color: var(--primary); font-weight: 600;"><span id="sol-val">15</span> min</span>
+                                    </label>
+                                    <input type="range" id="f-sol" min="0" max="180" step="5" value="15" required style="cursor: pointer;">
                                 </div>
                             </div>
 
@@ -127,29 +140,26 @@
                             <h3>🤔 Subiektywne Oceny</h3>
                             
                             <div class="form-row">
-                                <div class="form-group">
+                                <div class="form-group" style="width: 100%;">
                                     <label for="f-quality">Jakość snu (1-5)</label>
                                     <div class="emoji-scale" id="scale-quality">
                                         <label><input type="radio" name="quality" value="1"> 😫</label>
                                         <label><input type="radio" name="quality" value="2"> 😟</label>
                                         <label><input type="radio" name="quality" value="3" checked> 😐</label>
                                         <label><input type="radio" name="quality" value="4"> 🙂</label>
-                                        <label><input type="radio" name="quality" value="5"> 😴</label>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <label for="f-energy">Energia (1-5)</label>
-                                    <div class="emoji-scale" id="scale-energy">
-                                        <label><input type="radio" name="energy" value="1"> 🪫</label>
-                                        <label><input type="radio" name="energy" value="2"> 😮‍💨</label>
-                                        <label><input type="radio" name="energy" value="3" checked> 😐</label>
-                                        <label><input type="radio" name="energy" value="4"> ⚡</label>
-                                        <label><input type="radio" name="energy" value="5"> 🔋</label>
+                                        <label><input type="radio" name="quality" value="5"> 😄</label>
                                     </div>
                                 </div>
                             </div>
 
                             <div class="form-row">
+                                <div class="form-group">
+                                    <label for="f-energy" style="display: flex; justify-content: space-between;">
+                                        <span>Energia w dzień</span>
+                                        <span style="color: var(--primary); font-weight: 600;"><span id="energy-val">5</span> / 10</span>
+                                    </label>
+                                    <input type="range" id="f-energy" min="1" max="10" step="1" value="5" required style="cursor: pointer;">
+                                </div>
                                 <div class="form-group">
                                     <label for="f-mood">Nastrój (1-5)</label>
                                     <div class="emoji-scale" id="scale-mood">
@@ -160,10 +170,6 @@
                                         <label><input type="radio" name="mood" value="5"> 😄</label>
                                     </div>
                                 </div>
-                                <div class="form-group">
-                                    <label for="f-sleepiness">Senność w dzień (0-10)</label>
-                                    <input type="number" id="f-sleepiness" min="0" max="10" value="5">
-                                </div>
                             </div>
                             
                             <div class="form-group">
@@ -171,6 +177,15 @@
                                 <textarea id="f-notes" rows="3" placeholder="Dodatkowe uwagi dotyczące nocy lub dnia..."></textarea>
                             </div>
                         </div>
+
+                        <datalist id="awk-duration-presets">
+                            <option value="15"></option>
+                            <option value="30"></option>
+                            <option value="45"></option>
+                            <option value="60"></option>
+                            <option value="90"></option>
+                            <option value="120"></option>
+                        </datalist>
 
                         <div class="form-actions">
                             <button type="button" class="btn-secondary" id="btn-cancel-form">Wyczyść</button>
@@ -192,8 +207,10 @@
                 <div class="grid-legend">
                     <div class="legend-item"><span class="box color-sleep"></span> Sen</div>
                     <div class="legend-item"><span class="box color-bed"></span> Czas w łóżku (Czuwanie)</div>
-                    <div class="legend-item"><span class="box color-awake"></span> WASO (Czuwanie w nocy)</div>
+                    <div class="legend-item"><span class="box" style="background-color: #3d1c14; border-color: #5c2c20;"></span> Przebudzenie (został w łóżku)</div>
+                    <div class="legend-item"><span class="box" style="background-color: #133320; border-color: #1e4d30;"></span> Przebudzenie (wstał z łóżka)</div>
                     <div class="legend-item"><span class="box color-nap"></span> Drzemka</div>
+                    <div class="legend-item" style="margin-left: 10px;">💡 Zgaszenie światła</div>
                 </div>
             </section>
 
@@ -279,7 +296,7 @@
                         <canvas id="chart-waso-sol"></canvas>
                     </div>
                     <div class="chart-wrapper">
-                        <h3>Jakość, Energia i Senność</h3>
+                        <h3>Jakość (1-5) i Energia (1-10)</h3>
                         <canvas id="chart-subjective"></canvas>
                     </div>
                 </div>
@@ -371,6 +388,23 @@
         </main>
     </div>
 
-    <script src="app.js?v=6"></script>
+    <dialog id="tutorial-modal" class="modal" style="border: none; border-radius: 8px; background: transparent; margin: auto; padding: 0; max-width: 500px;">
+        <div class="modal-content card" style="margin: 0; position: relative; padding: 24px;">
+            <button id="close-tutorial" class="btn-close" style="position: absolute; top: 16px; right: 16px; background: none; border: none; font-size: 18px; cursor: pointer; color: var(--text-muted);">✕</button>
+            <h3 style="margin-bottom: 16px; color: var(--primary);">Jak wypełniać Dziennik Snu?</h3>
+            <ul style="padding-left: 20px; line-height: 1.6; margin-bottom: 16px;">
+                <li style="margin-bottom: 8px;"><strong>Data:</strong> Dotyczy nocy poprzedzającej poranek. Jeśli wstałeś we wtorek rano, wpisujesz datę wtorkową.</li>
+                <li style="margin-bottom: 8px;"><strong>Położenie do łóżka:</strong> Godzina, o której fizycznie położyłeś się do łóżka.</li>
+                <li style="margin-bottom: 8px;"><strong>Zgaszenie światła:</strong> Moment, w którym zgasiłeś światło z intencją pójścia spać.</li>
+                <li style="margin-bottom: 8px;"><strong>Czas zasypiania (SOL):</strong> Szacowany czas (w minutach) jaki minął od zgaszenia światła do momentu zaśnięcia.</li>
+                <li style="margin-bottom: 8px;"><strong>Przebudzenia w nocy:</strong> Zapisuj tylko te przebudzenia, które pamiętasz. Podaj ich przybliżony czas trwania.</li>
+                <li style="margin-bottom: 8px;"><strong>Ostateczne obudzenie:</strong> Godzina, o której rano obudziłeś się na dobre.</li>
+                <li style="margin-bottom: 8px;"><strong>Wstanie z łóżka:</strong> Godzina ostatecznego opuszczenia łóżka i rozpoczęcia dnia.</li>
+            </ul>
+            <p style="font-size: 13px; color: var(--text-muted);"><em>Wskazówka: Wypełniaj dziennik rano, najlepiej w ciągu 1-2 godzin po przebudzeniu. Nie patrz w nocy na zegarek!</em></p>
+        </div>
+    </dialog>
+
+    <script type="module" src="app.js?v=10"></script>
 </body>
 </html>
